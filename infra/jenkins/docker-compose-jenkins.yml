@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  jenkins:
+    # Jenkins con JDK 17 + Maven (imagen construida localmente)
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: jenkins
+    user: root
+
+    # UI Jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+
+    volumes:
+      # Persistencia Jenkins (LOCAL)
+      - C:/jenkins/data:/var/jenkins_home
+
+      # Permite a Jenkins controlar Docker
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    # Variable para que Jenkins apunte al Selenium Grid por red Docker
+    environment:
+      - SELENIUM_GRID_URL=http://selenium-hub:4444/wd/hub
+
+    networks:
+      - selenium-grid
+
+    restart: unless-stopped
+
+networks:
+  selenium-grid:
+    external: true

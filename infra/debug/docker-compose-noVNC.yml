@@ -1,0 +1,17 @@
+# SOLO PARA VISUALIZACIÓN de Interfaz
+# NO USAR EN CI NORMAL
+# NO USAR POR DEFECTO
+
+services:
+
+  chrome-node:
+    environment:
+      - SE_VNC_NO_PASSWORD=1
+    ports:
+      - "7900:7900"
+
+  firefox-node:
+    environment:
+      - SE_VNC_NO_PASSWORD=1
+    ports:
+      - "7901:7900"

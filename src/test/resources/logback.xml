@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- ========================================================= -->
+    <!-- CONFIGURACIÓN BÁSICA DE LOGGING PARA TESTS Y CI           -->
+    <!-- ========================================================= -->
+
+    <!-- Appender a consola: Jenkins, Git Bash, Docker -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--
+                Formato:
+                fecha | nivel | hilo | clase - mensaje
+            -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} | %-5level | %thread | %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Nivel por defecto -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Reducir ruido de librerías externas -->
+    <logger name="org.openqa.selenium" level="WARN"/>
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="io.github.bonigarcia" level="WARN"/>
+
+</configuration>
