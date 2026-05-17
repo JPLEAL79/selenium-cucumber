@@ -125,7 +125,11 @@ pipeline {
 
             when {
                 // SOLO en AWS
-                expression { params.GRID_TARGET == 'aws' }
+                expression {
+                    params.GRID_TARGET == 'aws' &&
+                    env.S3_BUCKET?.trim() &&
+                    env.S3_BUCKET != 'your-s3-bucket-name'
+                }
             }
 
             steps {
