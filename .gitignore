@@ -53,4 +53,6 @@ id_rsa
 id_ed25519
 .aws/
 aws-notes.md
+runbook*.md
+*runbook*.md
 private/
