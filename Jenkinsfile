@@ -23,6 +23,11 @@ pipeline {
             choices: ['local', 'aws'],
             description: 'Where Selenium Grid is running'
         )
+        choice(
+            name: 'ASSISTED_DIAGNOSTICS',
+            choices: ['off', 'diagnosis', 'agent'],
+            description: 'off: normal execution, diagnosis: assisted failure analysis, agent: prepares external AI review context'
+        )
     }
 
     environment {
@@ -77,6 +82,18 @@ pipeline {
                     echo "GRID_TARGET = ${params.GRID_TARGET}"
                     echo "GRID_URL    = ${gridUrl}"
 
+                    def aiFlags = ''
+
+                    if (params.ASSISTED_DIAGNOSTICS == 'diagnosis' || params.ASSISTED_DIAGNOSTICS == 'agent') {
+                        aiFlags += ' -Dai.diagnostics.enabled=true'
+                    }
+
+                    if (params.ASSISTED_DIAGNOSTICS == 'agent') {
+                        aiFlags += ' -Dai.agent.context.enabled=true'
+                    }
+
+                    echo "ASSISTED_DIAGNOSTICS = ${params.ASSISTED_DIAGNOSTICS}"
+
                     // =================================
                     // LOCAL → solo Chrome (secuencial)
                     // =================================
@@ -85,7 +102,8 @@ pipeline {
                         sh """
                             mvn clean test ${env.MAVEN_FLAGS} \
                               -Dbrowser=chrome \
-                              -DseleniumGridUrl=${gridUrl}
+                              -DseleniumGridUrl=${gridUrl} \
+                              ${aiFlags}
                         """
                     }
 
@@ -102,7 +120,8 @@ pipeline {
                                 sh """
                                     mvn test ${env.MAVEN_FLAGS} \
                                       -Dbrowser=chrome \
-                                      -DseleniumGridUrl=${gridUrl}
+                                      -DseleniumGridUrl=${gridUrl} \
+                                      ${aiFlags}
                                 """
                             },
 
@@ -112,7 +131,8 @@ pipeline {
                                 sh """
                                     mvn test ${env.MAVEN_FLAGS} \
                                       -Dbrowser=firefox \
-                                      -DseleniumGridUrl=${gridUrl}
+                                      -DseleniumGridUrl=${gridUrl} \
+                                      ${aiFlags}
                                 """
                             }
                         )
