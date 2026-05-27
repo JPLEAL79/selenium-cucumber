@@ -21,6 +21,10 @@ public class CucumberFailureDiagnosticsPlugin implements EventListener {
     }
 
     private void handleTestStepFinished(TestStepFinished event) {
+        if (!DiagnosticsSettings.aiDiagnosticsEnabled()) {
+            return;
+        }
+
         Throwable error = event.getResult().getError();
 
         if (error == null) {

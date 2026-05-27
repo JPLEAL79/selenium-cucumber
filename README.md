@@ -152,6 +152,14 @@ allure serve target/allure-results
 The framework includes a supervised AI-assisted diagnostics layer for failed scenarios.
 It does not change code, retry blindly, push, merge, or make business decisions.
 
+It is disabled by default to keep raw framework executions clean.
+
+Enable it only when assisted diagnostics are needed:
+
+```bash
+mvn test -Dai.diagnostics.enabled=true
+```
+
 When a scenario fails, Allure can include:
 
 - failure category

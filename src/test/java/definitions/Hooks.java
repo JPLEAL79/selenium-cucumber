@@ -181,6 +181,11 @@ public class Hooks {
      * Si no existe diagnostico, no falla el teardown ni oculta el error real.
      */
     private void attachAiAssistedDiagnosis(Scenario scenario) {
+        if (!framework.diagnostics.DiagnosticsSettings.aiDiagnosticsEnabled()) {
+            logger.info("AI-assisted diagnostics disabled by ai.diagnostics.enabled=false");
+            return;
+        }
+
         FailureDiagnosis diagnosis = FailureDiagnosisStore.consume(scenario.getName());
 
         if (diagnosis == null) {

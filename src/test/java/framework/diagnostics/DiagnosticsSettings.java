@@ -26,6 +26,10 @@ public final class DiagnosticsSettings {
         return System.getProperty("diagnostics.testSourceRoot", DEFAULT_TEST_SOURCE_ROOT);
     }
 
+    public static boolean aiDiagnosticsEnabled() {
+        return Boolean.parseBoolean(System.getProperty("ai.diagnostics.enabled", "false"));
+    }
+
     public static String pageObjectFilePath(String simpleClassName) {
         if (simpleClassName == null || simpleClassName.isBlank() || "Not detected".equals(simpleClassName)) {
             return "Not detected";
