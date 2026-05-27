@@ -3,11 +3,8 @@ package definitions;
 import commons.ScreenshotUtil;
 import framework.diagnostics.EvidenceCollector;
 import framework.diagnostics.AllureDiagnosticsReporter;
-import framework.diagnostics.AiAgentAdvice;
-import framework.diagnostics.AiAgentAdvisor;
 import framework.diagnostics.FailureDiagnosis;
 import framework.diagnostics.FailureDiagnosisStore;
-import framework.diagnostics.RuleBasedQaAgentAdvisor;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
@@ -43,9 +40,6 @@ public class Hooks {
 
     // WebDriver aislado por hilo/escenario
     private static final ThreadLocal<WebDriver> DRIVER = new ThreadLocal<>();
-
-    // Agente local supervisado. Luego puede reemplazarse por un proveedor IA externo.
-    private static final AiAgentAdvisor AI_AGENT_ADVISOR = new RuleBasedQaAgentAdvisor();
 
     public static WebDriver getDriver() {
         return Objects.requireNonNull(
@@ -196,8 +190,6 @@ public class Hooks {
 
         AllureDiagnosticsReporter.attachFailureDiagnosis(scenario.getName(), diagnosis);
         AllureDiagnosticsReporter.attachAgentReviewContext(scenario.getName(), diagnosis);
-
-        AiAgentAdvice advice = AI_AGENT_ADVISOR.advise(scenario.getName(), diagnosis);
-        AllureDiagnosticsReporter.attachAgentAdvice(scenario.getName(), advice);
+        AllureDiagnosticsReporter.attachAgentAdvice(scenario.getName(), diagnosis);
     }
 }

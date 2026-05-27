@@ -19,18 +19,19 @@ public class FailureClassifier {
             Pattern.compile("(?i)(By\\.(?:id|xpath|cssSelector|className|name|tagName|linkText|partialLinkText):\\s*[^\\n\\r]+)");
 
     public FailureDiagnosis classify(Throwable throwable) {
-        Throwable root = StackTraceAnalyzer.rootCause(throwable);
+        Throwable root = rootCause(throwable);
         String message = fullMessage(throwable);
         String normalizedMessage = message.toLowerCase();
-        String pageObject = StackTraceAnalyzer.findPageObject(throwable);
-        String method = StackTraceAnalyzer.findPageObjectMethod(throwable);
+        StackTraceElement frameworkFrame = findFrameworkFrame(throwable);
+        String pageObject = frameworkFrame == null ? "Not detected" : simpleClassName(frameworkFrame.getClassName());
+        String method = frameworkFrame == null ? "Not detected" : frameworkFrame.getMethodName();
         String locator = extractLocator(message);
         String rootException = root.getClass().getSimpleName();
 
         if (isGridOrSelenium(throwable, normalizedMessage)) {
             return diagnosis(
-                    FailureCategory.GRID_SELENIUM,
-                    DiagnosisConfidence.HIGH,
+                    FailureDiagnosis.Category.GRID_SELENIUM,
+                    FailureDiagnosis.Confidence.HIGH,
                     "Selenium Grid or browser session failed.",
                     pageObject,
                     method,
@@ -44,8 +45,8 @@ public class FailureClassifier {
 
         if (isEnvironment(throwable, normalizedMessage)) {
             return diagnosis(
-                    FailureCategory.ENVIRONMENT,
-                    DiagnosisConfidence.MEDIUM,
+                    FailureDiagnosis.Category.ENVIRONMENT,
+                    FailureDiagnosis.Confidence.MEDIUM,
                     "The target application or network environment looks unavailable.",
                     pageObject,
                     method,
@@ -59,8 +60,8 @@ public class FailureClassifier {
 
         if (isDataOrConfiguration(throwable, normalizedMessage)) {
             return diagnosis(
-                    FailureCategory.DATA_CONFIGURATION,
-                    DiagnosisConfidence.HIGH,
+                    FailureDiagnosis.Category.DATA_CONFIGURATION,
+                    FailureDiagnosis.Confidence.HIGH,
                     "Missing or invalid test data/configuration.",
                     pageObject,
                     method,
@@ -74,8 +75,8 @@ public class FailureClassifier {
 
         if (isLocatorBroken(throwable, locator, pageObject)) {
             return diagnosis(
-                    FailureCategory.LOCATOR_BROKEN,
-                    locator.equals("Not detected") ? DiagnosisConfidence.MEDIUM : DiagnosisConfidence.HIGH,
+                    FailureDiagnosis.Category.LOCATOR_BROKEN,
+                    locator.equals("Not detected") ? FailureDiagnosis.Confidence.MEDIUM : FailureDiagnosis.Confidence.HIGH,
                     "Element was not found or was not ready before the explicit wait ended.",
                     pageObject,
                     method,
@@ -89,8 +90,8 @@ public class FailureClassifier {
 
         if (hasCause(throwable, TimeoutException.class)) {
             return diagnosis(
-                    FailureCategory.TIMEOUT,
-                    DiagnosisConfidence.MEDIUM,
+                    FailureDiagnosis.Category.TIMEOUT,
+                    FailureDiagnosis.Confidence.MEDIUM,
                     "The application or browser operation exceeded the expected wait time.",
                     pageObject,
                     method,
@@ -104,8 +105,8 @@ public class FailureClassifier {
 
         if (hasCause(throwable, AssertionError.class) || root.getClass().getName().contains("Assertion")) {
             return diagnosis(
-                    FailureCategory.FUNCTIONAL_ASSERTION,
-                    DiagnosisConfidence.HIGH,
+                    FailureDiagnosis.Category.FUNCTIONAL_ASSERTION,
+                    FailureDiagnosis.Confidence.HIGH,
                     "The application behavior did not match the expected assertion.",
                     pageObject,
                     method,
@@ -119,8 +120,8 @@ public class FailureClassifier {
 
         if (hasCause(throwable, StaleElementReferenceException.class)) {
             return diagnosis(
-                    FailureCategory.FLAKY_CANDIDATE,
-                    DiagnosisConfidence.MEDIUM,
+                    FailureDiagnosis.Category.FLAKY_CANDIDATE,
+                    FailureDiagnosis.Confidence.MEDIUM,
                     "The DOM changed while Selenium was interacting with the element.",
                     pageObject,
                     method,
@@ -133,8 +134,8 @@ public class FailureClassifier {
         }
 
         return diagnosis(
-                FailureCategory.UNKNOWN,
-                DiagnosisConfidence.LOW,
+                FailureDiagnosis.Category.UNKNOWN,
+                FailureDiagnosis.Confidence.LOW,
                 "The failure does not match a known deterministic pattern yet.",
                 pageObject,
                 method,
@@ -211,8 +212,41 @@ public class FailureClassifier {
         return builder.toString();
     }
 
-    private FailureDiagnosis diagnosis(FailureCategory category,
-                                       DiagnosisConfidence confidence,
+    private Throwable rootCause(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+        }
+        return current;
+    }
+
+    private StackTraceElement findFrameworkFrame(Throwable throwable) {
+        Throwable root = rootCause(throwable);
+        String pageObjectPrefix = DiagnosticsSettings.pageObjectPackage() + ".";
+        String stepDefinitionPrefix = DiagnosticsSettings.stepDefinitionPackage() + ".";
+
+        for (StackTraceElement frame : root.getStackTrace()) {
+            if (frame.getClassName().startsWith(pageObjectPrefix)) {
+                return frame;
+            }
+        }
+
+        for (StackTraceElement frame : root.getStackTrace()) {
+            if (frame.getClassName().startsWith(stepDefinitionPrefix)) {
+                return frame;
+            }
+        }
+
+        return null;
+    }
+
+    private String simpleClassName(String className) {
+        int index = className.lastIndexOf('.');
+        return index >= 0 ? className.substring(index + 1) : className;
+    }
+
+    private FailureDiagnosis diagnosis(FailureDiagnosis.Category category,
+                                       FailureDiagnosis.Confidence confidence,
                                        String probableCause,
                                        String pageObject,
                                        String method,

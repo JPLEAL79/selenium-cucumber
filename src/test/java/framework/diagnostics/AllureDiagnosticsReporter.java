@@ -59,7 +59,7 @@ public final class AllureDiagnosticsReporter {
     }
 
     public static void attachAgentReviewContext(String scenarioName, FailureDiagnosis diagnosis) {
-        String context = AiAgentContextBuilder.buildReviewContext(scenarioName, diagnosis);
+        String context = buildAgentReviewContext(scenarioName, diagnosis);
 
         Allure.addAttachment(
                 "AI Agent Review Context",
@@ -69,44 +69,64 @@ public final class AllureDiagnosticsReporter {
         );
     }
 
-    public static void attachAgentAdvice(String scenarioName, AiAgentAdvice advice) {
-        String report = """
-                AI Agent Suggested Review
-
-                Scenario: %s
-
-                Human explanation:
-                %s
-
-                Probable impacted file:
-                %s
-
-                Suggested fix:
-                %s
-
-                Risk:
-                %s
-
-                Retry:
-                %s
-
-                Requires human review:
-                %s
-                """.formatted(
-                scenarioName,
-                advice.humanExplanation(),
-                advice.probableImpactedFile(),
-                advice.suggestedFix(),
-                advice.risk(),
-                advice.retryDecision(),
-                advice.humanReviewRequired() ? "Yes" : "No"
-        );
+    public static void attachAgentAdvice(String scenarioName, FailureDiagnosis diagnosis) {
+        String report = SupervisedQaAgentAdvisor.buildAdviceReport(scenarioName, diagnosis);
 
         Allure.addAttachment(
                 "AI Agent Suggested Review",
                 "text/plain",
                 new ByteArrayInputStream(report.getBytes(StandardCharsets.UTF_8)),
                 "txt"
+        );
+    }
+
+    private static String buildAgentReviewContext(String scenarioName, FailureDiagnosis diagnosis) {
+        return """
+                AI Agent Review Context
+
+                Role:
+                You are a supervised QA automation assistant for Selenium, Java and Cucumber.
+
+                Safety rules:
+                - Do not modify code automatically.
+                - Do not recommend merge, push or deployment.
+                - Do not hide real failures with retries.
+                - Suggest only small, reviewable fixes.
+                - Require human approval for any code change.
+                - Adapt Page Object/package names to the target business framework.
+
+                Current failure:
+                Scenario: %s
+                Category: %s
+                Confidence: %s
+                Probable cause: %s
+                Page Object: %s
+                Method/Class: %s
+                Locator: %s
+                Root exception: %s
+                Retry recommended by rules: %s
+
+                Evidence:
+                %s
+
+                Expected response:
+                - Human explanation:
+                - Probable impacted file:
+                - Suggested fix:
+                - Risk:
+                - Should retry be used?: Yes/No and why
+                - Requires human review: Yes
+                """.formatted(
+                scenarioName,
+                diagnosis.category(),
+                diagnosis.confidence(),
+                diagnosis.probableCause(),
+                diagnosis.pageObject(),
+                diagnosis.method(),
+                diagnosis.locator(),
+                diagnosis.rootException(),
+                diagnosis.retryRecommended() ? "Yes" : "No",
+                diagnosis.evidence()
         );
     }
 }

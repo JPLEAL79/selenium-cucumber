@@ -6,8 +6,25 @@ package framework.diagnostics;
  */
 public class FailureDiagnosis {
 
-    private final FailureCategory category;
-    private final DiagnosisConfidence confidence;
+    public enum Category {
+        LOCATOR_BROKEN,
+        TIMEOUT,
+        ENVIRONMENT,
+        GRID_SELENIUM,
+        DATA_CONFIGURATION,
+        FLAKY_CANDIDATE,
+        FUNCTIONAL_ASSERTION,
+        UNKNOWN
+    }
+
+    public enum Confidence {
+        HIGH,
+        MEDIUM,
+        LOW
+    }
+
+    private final Category category;
+    private final Confidence confidence;
     private final String probableCause;
     private final String pageObject;
     private final String method;
@@ -18,8 +35,8 @@ public class FailureDiagnosis {
     private final boolean retryRecommended;
     private final boolean humanReviewRequired;
 
-    public FailureDiagnosis(FailureCategory category,
-                            DiagnosisConfidence confidence,
+    public FailureDiagnosis(Category category,
+                            Confidence confidence,
                             String probableCause,
                             String pageObject,
                             String method,
@@ -42,11 +59,11 @@ public class FailureDiagnosis {
         this.humanReviewRequired = humanReviewRequired;
     }
 
-    public FailureCategory category() {
+    public Category category() {
         return category;
     }
 
-    public DiagnosisConfidence confidence() {
+    public Confidence confidence() {
         return confidence;
     }
 
