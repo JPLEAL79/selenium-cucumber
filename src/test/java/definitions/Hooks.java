@@ -189,5 +189,6 @@ public class Hooks {
         }
 
         AllureDiagnosticsReporter.attachFailureDiagnosis(scenario.getName(), diagnosis);
+        AllureDiagnosticsReporter.attachAgentReviewContext(scenario.getName(), diagnosis);
     }
 }

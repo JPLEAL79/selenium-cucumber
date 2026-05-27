@@ -57,4 +57,15 @@ public final class AllureDiagnosticsReporter {
                 "txt"
         );
     }
+
+    public static void attachAgentReviewContext(String scenarioName, FailureDiagnosis diagnosis) {
+        String context = AiAgentContextBuilder.buildReviewContext(scenarioName, diagnosis);
+
+        Allure.addAttachment(
+                "AI Agent Review Context",
+                "text/plain",
+                new ByteArrayInputStream(context.getBytes(StandardCharsets.UTF_8)),
+                "txt"
+        );
+    }
 }
