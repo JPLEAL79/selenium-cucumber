@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 public class FailureClassifier {
 
     private static final Pattern LOCATOR_PATTERN =
-            Pattern.compile("(?i)(By\\.(?:id|xpath|cssSelector|className|name|tagName|linkText|partialLinkText):\\s*[^\\n\\r]+)");
+            Pattern.compile("(?i)(By\\.(?:id|xpath|cssSelector|className|name|tagName|linkText|partialLinkText):\\s*[^'\\n\\r]+)");
 
     public FailureDiagnosis classify(Throwable throwable) {
         Throwable root = rootCause(throwable);
@@ -43,21 +43,6 @@ public class FailureClassifier {
             );
         }
 
-        if (isEnvironment(throwable, normalizedMessage)) {
-            return diagnosis(
-                    FailureDiagnosis.Category.ENVIRONMENT,
-                    FailureDiagnosis.Confidence.MEDIUM,
-                    "The target application or network environment looks unavailable.",
-                    pageObject,
-                    method,
-                    locator,
-                    rootException,
-                    message,
-                    "Validate the application URL, network, DNS and environment health.",
-                    true
-            );
-        }
-
         if (isDataOrConfiguration(throwable, normalizedMessage)) {
             return diagnosis(
                     FailureDiagnosis.Category.DATA_CONFIGURATION,
@@ -73,6 +58,8 @@ public class FailureClassifier {
             );
         }
 
+        // Locator signals must win over generic timeout/environment wording.
+        // PageFactory failures often include both TimeoutException and NoSuchElementException.
         if (isLocatorBroken(throwable, locator, pageObject)) {
             return diagnosis(
                     FailureDiagnosis.Category.LOCATOR_BROKEN,
@@ -85,6 +72,21 @@ public class FailureClassifier {
                     message,
                     "Review the Page Object locator against the current DOM. Do not auto-change code.",
                     false
+            );
+        }
+
+        if (isEnvironment(throwable, normalizedMessage)) {
+            return diagnosis(
+                    FailureDiagnosis.Category.ENVIRONMENT,
+                    FailureDiagnosis.Confidence.MEDIUM,
+                    "The target application or network environment looks unavailable.",
+                    pageObject,
+                    method,
+                    locator,
+                    rootException,
+                    message,
+                    "Validate the application URL, network, DNS and environment health.",
+                    true
             );
         }
 
@@ -167,7 +169,9 @@ public class FailureClassifier {
         return hasCause(throwable, WebDriverException.class)
                 && (message.contains("net::")
                 || message.contains("dns")
-                || message.contains("timeout")
+                || message.contains("name not resolved")
+                || message.contains("unknown host")
+                || message.contains("connection timed out")
                 || message.contains("refused")
                 || message.contains("unreachable"));
     }
