@@ -22,15 +22,17 @@ public final class StackTraceAnalyzer {
 
     private static StackTraceElement findPageObjectFrame(Throwable throwable) {
         Throwable root = rootCause(throwable);
+        String pageObjectPrefix = DiagnosticsSettings.pageObjectPackage() + ".";
+        String stepDefinitionPrefix = DiagnosticsSettings.stepDefinitionPackage() + ".";
 
         for (StackTraceElement frame : root.getStackTrace()) {
-            if (frame.getClassName().startsWith("pages.")) {
+            if (frame.getClassName().startsWith(pageObjectPrefix)) {
                 return frame;
             }
         }
 
         for (StackTraceElement frame : root.getStackTrace()) {
-            if (frame.getClassName().startsWith("definitions.")) {
+            if (frame.getClassName().startsWith(stepDefinitionPrefix)) {
                 return frame;
             }
         }

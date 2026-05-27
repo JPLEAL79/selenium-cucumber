@@ -68,4 +68,45 @@ public final class AllureDiagnosticsReporter {
                 "txt"
         );
     }
+
+    public static void attachAgentAdvice(String scenarioName, AiAgentAdvice advice) {
+        String report = """
+                AI Agent Suggested Review
+
+                Scenario: %s
+
+                Human explanation:
+                %s
+
+                Probable impacted file:
+                %s
+
+                Suggested fix:
+                %s
+
+                Risk:
+                %s
+
+                Retry:
+                %s
+
+                Requires human review:
+                %s
+                """.formatted(
+                scenarioName,
+                advice.humanExplanation(),
+                advice.probableImpactedFile(),
+                advice.suggestedFix(),
+                advice.risk(),
+                advice.retryDecision(),
+                advice.humanReviewRequired() ? "Yes" : "No"
+        );
+
+        Allure.addAttachment(
+                "AI Agent Suggested Review",
+                "text/plain",
+                new ByteArrayInputStream(report.getBytes(StandardCharsets.UTF_8)),
+                "txt"
+        );
+    }
 }

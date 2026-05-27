@@ -23,6 +23,7 @@ public final class AiAgentContextBuilder {
                 - Do not hide real failures with retries.
                 - Suggest only small, reviewable fixes.
                 - Require human approval for any code change.
+                - Adapt Page Object/package names to the target business framework.
 
                 Current failure:
                 Scenario: %s

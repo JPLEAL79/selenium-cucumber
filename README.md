@@ -146,3 +146,37 @@ Open the report locally:
 ```bash
 allure serve target/allure-results
 ```
+
+## AI-Assisted Diagnostics MVP
+
+The framework includes a supervised AI-assisted diagnostics layer for failed scenarios.
+It does not change code, retry blindly, push, merge, or make business decisions.
+
+When a scenario fails, Allure can include:
+
+- failure category
+- probable cause
+- impacted Page Object or step class when detected
+- root exception
+- confidence level
+- suggested human action
+- agent review context
+- supervised agent recommendation
+
+The default packages match this demo framework, but another business project can adapt them without code changes:
+
+```bash
+mvn test \
+  -Ddiagnostics.pageObjectPackage=pages \
+  -Ddiagnostics.stepDefinitionPackage=definitions \
+  -Ddiagnostics.testSourceRoot=src/test/java
+```
+
+For another project, replace those values with its real packages, for example:
+
+```bash
+mvn test \
+  -Ddiagnostics.pageObjectPackage=com.company.app.ui.pages \
+  -Ddiagnostics.stepDefinitionPackage=com.company.app.steps \
+  -Ddiagnostics.testSourceRoot=src/test/java
+```
