@@ -30,6 +30,10 @@ public final class DiagnosticsSettings {
         return Boolean.parseBoolean(System.getProperty("ai.diagnostics.enabled", "false"));
     }
 
+    public static boolean aiAgentContextEnabled() {
+        return Boolean.parseBoolean(System.getProperty("ai.agent.context.enabled", "false"));
+    }
+
     public static String pageObjectFilePath(String simpleClassName) {
         if (simpleClassName == null || simpleClassName.isBlank() || "Not detected".equals(simpleClassName)) {
             return "Not detected";

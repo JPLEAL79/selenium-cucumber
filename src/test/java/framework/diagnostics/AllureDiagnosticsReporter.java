@@ -46,7 +46,7 @@ public final class AllureDiagnosticsReporter {
                 diagnosis.rootException(),
                 diagnosis.retryRecommended() ? "Yes" : "No",
                 diagnosis.humanReviewRequired() ? "Yes" : "No",
-                diagnosis.evidence(),
+                compactEvidence(diagnosis.evidence(), 700),
                 diagnosis.suggestedAction()
         );
 
@@ -95,7 +95,7 @@ public final class AllureDiagnosticsReporter {
                 - Require human approval for any code change.
                 - Adapt Page Object/package names to the target business framework.
 
-                Current failure:
+                Failure payload:
                 Scenario: %s
                 Category: %s
                 Confidence: %s
@@ -106,7 +106,7 @@ public final class AllureDiagnosticsReporter {
                 Root exception: %s
                 Retry recommended by rules: %s
 
-                Evidence:
+                Short evidence:
                 %s
 
                 Expected response:
@@ -126,7 +126,25 @@ public final class AllureDiagnosticsReporter {
                 diagnosis.locator(),
                 diagnosis.rootException(),
                 diagnosis.retryRecommended() ? "Yes" : "No",
-                diagnosis.evidence()
+                compactEvidence(diagnosis.evidence(), 900)
         );
+    }
+
+    private static String compactEvidence(String evidence, int maxLength) {
+        if (evidence == null || evidence.isBlank()) {
+            return "No evidence available.";
+        }
+
+        String compacted = evidence
+                .replaceAll("(?m)^\\s*Build info:.*$", "")
+                .replaceAll("(?m)^\\s*System info:.*$", "")
+                .replaceAll("(?m)^\\s*Capabilities \\{.*$", "")
+                .replaceAll("(?m)^\\s*For documentation on this error.*$", "")
+                .replaceAll("(?m)^\\s*at .*$", "")
+                .replaceAll("(?m)^\\s*\\(Session info:.*$", "")
+                .replaceAll("\\R{3,}", System.lineSeparator() + System.lineSeparator())
+                .trim();
+
+        return compacted.length() > maxLength ? compacted.substring(0, maxLength) + "..." : compacted;
     }
 }

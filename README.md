@@ -147,7 +147,7 @@ Open the report locally:
 allure serve target/allure-results
 ```
 
-## AI-Assisted Diagnostics MVP
+## AI-Assisted Diagnostics
 
 The framework includes a supervised AI-assisted diagnostics layer for failed scenarios.
 It does not change code, retry blindly, push, merge, or make business decisions.
@@ -157,19 +157,27 @@ It is disabled by default to keep raw framework executions clean.
 Enable it only when assisted diagnostics are needed:
 
 ```bash
-mvn test -Dai.diagnostics.enabled=true
+mvn test -Dbrowser=chrome "-Dai.diagnostics.enabled=true"
 ```
 
-When a scenario fails, Allure can include:
+When a scenario fails, Allure includes a compact diagnosis with:
 
 - failure category
 - probable cause
 - impacted Page Object or step class when detected
+- locator when detected
 - root exception
 - confidence level
 - suggested human action
-- agent review context
-- supervised agent recommendation
+
+Enable agent-ready context only when an external AI assistant will review the failure:
+
+```bash
+mvn test -Dbrowser=chrome "-Dai.diagnostics.enabled=true" "-Dai.agent.context.enabled=true"
+```
+
+This adds a short review payload and supervised recommendation for external AI analysis.
+It is kept optional to avoid noisy reports during normal executions.
 
 The default packages match this demo framework, but another business project can adapt them without code changes:
 

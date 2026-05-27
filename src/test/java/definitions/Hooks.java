@@ -194,7 +194,10 @@ public class Hooks {
         }
 
         AllureDiagnosticsReporter.attachFailureDiagnosis(scenario.getName(), diagnosis);
-        AllureDiagnosticsReporter.attachAgentReviewContext(scenario.getName(), diagnosis);
-        AllureDiagnosticsReporter.attachAgentAdvice(scenario.getName(), diagnosis);
+
+        if (framework.diagnostics.DiagnosticsSettings.aiAgentContextEnabled()) {
+            AllureDiagnosticsReporter.attachAgentReviewContext(scenario.getName(), diagnosis);
+            AllureDiagnosticsReporter.attachAgentAdvice(scenario.getName(), diagnosis);
+        }
     }
 }
