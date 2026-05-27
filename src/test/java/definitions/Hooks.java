@@ -1,6 +1,10 @@
 package definitions;
 
 import commons.ScreenshotUtil;
+import framework.diagnostics.EvidenceCollector;
+import framework.diagnostics.AllureDiagnosticsReporter;
+import framework.diagnostics.FailureDiagnosis;
+import framework.diagnostics.FailureDiagnosisStore;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
@@ -153,6 +157,8 @@ public class Hooks {
                 );
 
                 ScreenshotUtil.captureOnFailure(driver, scenario);
+                EvidenceCollector.attachBrowserEvidence(driver, scenario);
+                attachAiAssistedDiagnosis(scenario);
 
             } else {
 
@@ -168,5 +174,20 @@ public class Hooks {
 
             DRIVER.remove();
         }
+    }
+
+    /**
+     * Adjunta el diagnostico asistido generado por el plugin de Cucumber.
+     * Si no existe diagnostico, no falla el teardown ni oculta el error real.
+     */
+    private void attachAiAssistedDiagnosis(Scenario scenario) {
+        FailureDiagnosis diagnosis = FailureDiagnosisStore.consume(scenario.getName());
+
+        if (diagnosis == null) {
+            logger.warn("No AI-assisted diagnosis available for scenario: {}", scenario.getName());
+            return;
+        }
+
+        AllureDiagnosticsReporter.attachFailureDiagnosis(scenario.getName(), diagnosis);
     }
 }

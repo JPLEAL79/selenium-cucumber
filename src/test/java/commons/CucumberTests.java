@@ -22,7 +22,7 @@ import org.junit.platform.suite.api.Suite;
 )
 @ConfigurationParameter(
         key = Constants.PLUGIN_PROPERTY_NAME,
-        value = "pretty,io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm"
+        value = "pretty,io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm,framework.diagnostics.CucumberFailureDiagnosticsPlugin"
 )
 public class CucumberTests {
     // Runner central de Cucumber (sin lógica adicional)
