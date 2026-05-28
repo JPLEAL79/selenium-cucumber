@@ -179,6 +179,43 @@ mvn test -Dbrowser=chrome "-Dai.diagnostics.enabled=true" "-Dai.agent.context.en
 This adds a short review payload and supervised recommendation for external AI analysis.
 It is kept optional to avoid noisy reports during normal executions.
 
+## External AI Review Contract
+
+The external AI review is intended as a post-execution assistant, not as an autonomous fixer.
+
+Input:
+
+- compact failure diagnosis
+- browser evidence
+- screenshot reference
+- affected Page Object or step class when detected
+- locator and root exception when detected
+- suggested human action
+
+Output:
+
+- short explanation of the probable cause
+- suggested fix or investigation path
+- retry recommendation only when the failure looks transient
+- risk note
+- explicit human review requirement
+
+Safety limits:
+
+- no automatic code changes
+- no automatic commit, push, merge, or deployment
+- no business-rule assumptions
+- no hidden retries for real defects
+- no external AI call unless explicitly enabled by the pipeline/user
+
+Recommended Jenkins usage:
+
+```text
+ASSISTED_DIAGNOSTICS=off       normal execution
+ASSISTED_DIAGNOSTICS=diagnosis assisted failure analysis
+ASSISTED_DIAGNOSTICS=agent     prepares external AI review context
+```
+
 The default packages match this demo framework, but another business project can adapt them without code changes:
 
 ```bash
